@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+/* Glassmorphism & Mesh backgrounds */
+.bg-mesh-light {
+  background-color: #FAF8F5;
+  background-image: 
+    radial-gradient(at 10% 10%, rgba(209, 250, 229, 0.6) 0px, transparent 50%),
+    radial-gradient(at 90% 10%, rgba(254, 226, 226, 0.5) 0px, transparent 50%),
+    radial-gradient(at 50% 90%, rgba(254, 243, 199, 0.4) 0px, transparent 50%);
+}
+
+.bg-mesh-dark {
+  background-color: #0B1120;
+  background-image: 
+    radial-gradient(at 10% 10%, rgba(6, 78, 59, 0.35) 0px, transparent 50%),
+    radial-gradient(at 90% 10%, rgba(136, 19, 55, 0.25) 0px, transparent 50%),
+    radial-gradient(at 50% 90%, rgba(120, 53, 15, 0.2) 0px, transparent 50%);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+}
+
+.dark .glass-panel {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+}
+
+/* Credential Badge Card */
+.credential-gradient {
+  background: linear-gradient(135deg, #064E3B 0%, #047857 50%, #065F46 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.credential-gradient::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -40%;
+  width: 90%;
+  height: 90%;
+  background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Leaflet Container customization */
+.leaflet-container {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+  z-index: 10;
+  border-radius: 1.5rem;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 1rem !important;
+  padding: 0.5rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Smooth custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
