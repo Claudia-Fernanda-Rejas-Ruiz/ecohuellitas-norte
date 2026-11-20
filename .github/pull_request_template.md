@@ -1,33 +1,33 @@
-### 📋 Checklist de Validación de Pull Request — EcoHuellitas Norte
+### Checklist de Validacion de Pull Request - EcoHuellitas Norte
 
-#### 📌 1. Historia de Usuario / Ticket Vinculado
+#### 1. Historia de Usuario / Ticket Vinculado
 - **Ticket Jira:** [EHN-XX](https://psicoteddy-app.atlassian.net/browse/EHN-XX)
-- **Épica Asociada:** [EP-XX]
+- **Epica Asociada:** [EP-XX]
 - **Sprint:** Sprint [1 | 2 | 3 | 4]
 
 ---
 
-#### 🔍 2. Descripción de los Cambios Implementados
+#### 2. Descripcion de los Cambios Implementados
 - [ ] Breve resumen de los cambios introducidos en el frontend / backend / base de datos.
 - [ ] ¿Afecta a ordenanzas municipales de Lima Norte (Los Olivos, Comas, SMP, Independencia)?
 
 ---
 
-#### 🧪 3. Pruebas y Calidad de Código
-- [ ] Se ejecutaron pruebas unitarias e integración localmente (`npm test`).
-- [ ] Cobertura de código superior al **80%** verificada.
+#### 3. Pruebas y Calidad de Codigo
+- [ ] Se ejecutaron pruebas unitarias e integracion localmente (`npm test`).
+- [ ] Cobertura de codigo superior al **80%** verificada.
 - [ ] Todos los tests pasan sin errores ni advertencias.
 
 ---
 
-#### 🛡️ 4. Seguridad Shift-Left (DevSecOps)
-- [ ] **Secretos:** Verificado que no se incluyan contraseñas, tokens JWT ni API keys en el código (`.env.example` actualizado).
-- [ ] **SAST / CodeQL:** El código no contiene vulnerabilidades de inyección SQL ni XSS.
-- [ ] **Dependencias:** Ejecutado `npm audit` con 0 vulnerabilidades críticas.
+#### 4. Seguridad Shift-Left (DevSecOps)
+- [ ] **Secretos:** Verificado que no se incluyan contrasenas, tokens JWT ni API keys en el codigo (`.env.example` actualizado).
+- [ ] **SAST / CodeQL:** El codigo no contiene vulnerabilidades de inyeccion SQL ni XSS.
+- [ ] **Dependencias:** Ejecutado `npm audit` con 0 vulnerabilidades criticas.
 - [ ] **Control de Acceso:** Endpoints protegidos con middleware de roles (`citizen`, `inspector`, `admin`).
 
 ---
 
-#### 🌐 5. Despliegue y Validación
+#### 5. Despliegue y Validacion
 - [ ] Probado localmente en `http://localhost:3000`.
-- [ ] Despliegue en la nube verificado sin errores de CORS o headers.
+- [ ] Verificacion de despliegue y smoke test ejecutados exitosamente.

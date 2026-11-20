@@ -1,4 +1,4 @@
-name: Flujo Integrado DevSecOps y Despliegue Continuo — EcoHuellitas Norte
+name: Flujo Integrado DevSecOps y Verificacion de Despliegue - EcoHuellitas Norte
 
 on:
   push:
@@ -8,56 +8,56 @@ on:
 
 jobs:
   # =========================================================================
-  # FASE 1: CONSTRUCCIÓN Y VERIFICACIÓN DE DEPENDENCIAS (BUILD)
+  # FASE 1: CONSTRUCCION Y VALIDACION DE SINTAXIS (BUILD & LINT)
   # =========================================================================
   fase-1-construccion:
-    name: 🏗️ Fase 1 — Construcción y Verificación de Entorno
+    name: Fase 1 - Construccion y Verificacion de Entorno
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Clonar repositorio y código fuente
+      - name: Clonar repositorio y codigo fuente
         uses: actions/checkout@v4
 
-      - name: ⚙️ Configurar versión de Node.js 20 LTS
+      - name: Configurar version de Node.js 20 LTS
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: 📦 Instalar dependencias limpias (npm ci)
+      - name: Instalar dependencias limpias (npm ci)
         run: npm ci
 
-      - name: 🔍 Validar sintaxis y compilación del proyecto
+      - name: Validar sintaxis y compilacion del proyecto
         run: node -c src/server.js src/app.js
 
   # =========================================================================
-  # FASE 2: PRUEBAS AUTOMATIZADAS UNITARIAS Y DE INTEGRACIÓN (TEST)
+  # FASE 2: PRUEBAS AUTOMATIZADAS UNITARIAS Y DE INTEGRACION (TEST)
   # =========================================================================
   fase-2-pruebas-automatizadas:
-    name: 🧪 Fase 2 — Pruebas Automatizadas y Cobertura de Código
+    name: Fase 2 - Pruebas Automatizadas y Cobertura de Codigo
     runs-on: ubuntu-latest
     needs: fase-1-construccion
 
     steps:
-      - name: 📥 Clonar código fuente
+      - name: Clonar codigo fuente
         uses: actions/checkout@v4
 
-      - name: ⚙️ Configurar entorno Node.js
+      - name: Configurar entorno Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: 📦 Instalar dependencias
+      - name: Instalar dependencias
         run: npm ci
 
-      - name: 🚀 Ejecutar suite completa de 24 pruebas con Jest
+      - name: Ejecutar suite completa de 24 pruebas con Jest
         run: npm test
         env:
           NODE_ENV: test
           JWT_SECRET: secreto-devsecops-pruebas-lima-norte-2026
 
-      - name: 📊 Guardar reporte de cobertura como artefacto (LCOV)
+      - name: Guardar reporte de cobertura como artefacto (LCOV)
         uses: actions/upload-artifact@v4
         with:
           name: reporte-cobertura-pruebas
@@ -65,69 +65,110 @@ jobs:
           retention-days: 7
 
   # =========================================================================
-  # FASE 3: ANÁLISIS ESTÁTICO DE SEGURIDAD EN CÓDIGO FUENTE (SAST)
+  # FASE 3: ANALISIS ESTATICO DE SEGURIDAD EN CODIGO FUENTE (SAST)
   # =========================================================================
   fase-3-analisis-sast:
-    name: 🛡️ Fase 3 — Análisis Estático de Seguridad SAST (CodeQL)
+    name: Fase 3 - Analisis Estatico de Seguridad SAST (CodeQL)
     runs-on: ubuntu-latest
     needs: fase-2-pruebas-automatizadas
 
     steps:
-      - name: 📥 Clonar código fuente
+      - name: Clonar codigo fuente
         uses: actions/checkout@v4
 
-      - name: 🔍 Inicializar analizador de seguridad CodeQL
+      - name: Inicializar analizador de seguridad CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: javascript
 
-      - name: 🔎 Ejecutar análisis estático contra inyecciones y XSS
+      - name: Ejecutar analisis estatico contra inyecciones y XSS
         uses: github/codeql-action/analyze@v3
 
   # =========================================================================
-  # FASE 4: AUDITORÍA DE DEPENDENCIAS (SCA) Y ESCANEO DE SECRETOS
+  # FASE 4: ESCANEO Y DETECCION DE FUGA DE SECRETOS (SECRET SCANNING)
   # =========================================================================
-  fase-4-auditoria-y-secretos:
-    name: 🔒 Fase 4 — Auditoría de Vulnerabilidades y Fuga de Secretos
+  fase-4-deteccion-secretos:
+    name: Fase 4 - Escaneo y Deteccion de Secretos (Gitleaks)
     runs-on: ubuntu-latest
     needs: fase-2-pruebas-automatizadas
 
     steps:
-      - name: 📥 Clonar código fuente
+      - name: Clonar codigo fuente con historial completo
         uses: actions/checkout@v4
-
-      - name: ⚙️ Configurar Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          fetch-depth: 0
 
-      - name: 🛡️ Auditoría de librerías y dependencias vulnerables (npm audit)
-        run: npm audit --audit-level=critical
-
-      - name: 🔑 Escaneo de llaves, tokens y secretos expuestos con Gitleaks
+      - name: Escaneo de llaves, tokens y credenciales con Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
   # =========================================================================
-  # FASE 5: DESPLIEGUE CONTINUO EN LA NUBE (DEPLOY)
+  # FASE 5: AUDITORIA DE DEPENDENCIAS Y VULNERABILIDADES (SCA)
   # =========================================================================
-  fase-5-despliegue-nube:
-    name: 🚀 Fase 5 — Despliegue Continuo a Servidor en la Nube
+  fase-5-auditoria-dependencias:
+    name: Fase 5 - Auditoria de Vulnerabilidades en Dependencias (SCA)
     runs-on: ubuntu-latest
-    needs: [fase-1-construccion, fase-2-pruebas-automatizadas, fase-3-analisis-sast, fase-4-auditoria-y-secretos]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: fase-2-pruebas-automatizadas
 
     steps:
-      - name: 📥 Clonar versión de producción
+      - name: Clonar codigo fuente
         uses: actions/checkout@v4
 
-      - name: 🌐 Ejecutar verificación de despliegue en la nube
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Auditoria de librerias de terceros (npm audit)
+        run: npm audit --audit-level=critical
+
+  # =========================================================================
+  # FASE 6: EMPAQUETADO, SMOKE TEST Y SIMULACION DE DESPLIEGUE (DEPLOY READY)
+  # =========================================================================
+  fase-6-empaquetado-y-despliegue:
+    name: Fase 6 - Empaquetado y Verificacion de Despliegue en Entorno de Pruebas
+    runs-on: ubuntu-latest
+    needs: [fase-1-construccion, fase-2-pruebas-automatizadas, fase-3-analisis-sast, fase-4-deteccion-secretos, fase-5-auditoria-dependencias]
+
+    steps:
+      - name: Clonar codigo fuente de la version
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js para empaquetado de produccion
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependencias solo de produccion
+        run: npm ci --omit=dev
+
+      - name: Generar artefacto comprimido de distribucion
         run: |
-          echo "==================================================================="
-          echo "🚀 INICIANDO DESPLIEGUE AUTOMÁTICO EN LA NUBE"
-          echo "🐾 Plataforma: EcoHuellitas Norte — Versión v1.0.0 Oficial"
-          echo "📍 Cobertura: Los Olivos · Comas · San Martín de Porres · Independencia"
-          echo "🛡️ Estado de Seguridad: Todas las 4 fases previas superadas con éxito"
-          echo "==================================================================="
+          mkdir -p dist
+          tar --exclude='./dist' --exclude='./.git' --exclude='./coverage' --exclude='./tests' -czvf dist/ecohuellitas-norte-v1.0.0.tar.gz .
+
+      - name: Ejecutar prueba de humo y verificacion de arranque (Smoke Test)
+        run: |
+          echo "Iniciando verificacion de arranque en entorno aislado..."
+          export PORT=3099
+          export JWT_SECRET=secreto-produccion-verificacion-2026
+          node src/server.js &
+          SERVER_PID=$!
+          sleep 4
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3099/api/salubridad/resumen || true)
+          echo "Codigo de respuesta recibido: $HTTP_STATUS"
+          kill $SERVER_PID
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Fallo en la prueba de humo del servicio de despliegue."
+            exit 1
+          fi
+          echo "Prueba de humo superada exitosamente con codigo 200."
+
+      - name: Publicar artefacto de despliegue generado
+        uses: actions/upload-artifact@v4
+        with:
+          name: paquete-distribucion-despliegue
+          path: dist/ecohuellitas-norte-v1.0.0.tar.gz
+          retention-days: 14
