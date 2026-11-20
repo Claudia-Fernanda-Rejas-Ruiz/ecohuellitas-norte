@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { MapPin, Camera, Filter, Eye, ArrowRight, Layers, Sparkles, X, AlertCircle } from 'lucide-react';
+import { MapPin, Camera, Filter, Eye, ArrowRight, Layers, X, AlertCircle, Trash2, Droplets, PawPrint, HeartCrack } from 'lucide-react';
 import { useData } from '../context/data-context';
 import { Card } from '../components/ui/card';
 import { FilterChip } from '../components/ui/chip';
@@ -18,29 +18,40 @@ function MapCenterController({ center, zoom }) {
   return null;
 }
 
-// Custom Leaflet HTML Pin Icon generator
-function createCustomPin(color, typeIcon) {
+// Custom Leaflet SVG Pin Icon generator (clean vector circle, no emojis)
+function createCustomPin(color, typeCode) {
+  let innerSvg = '';
+  if (typeCode === 'heces_sin_recoger') {
+    innerSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
+  } else if (typeCode === 'orina_fachada') {
+    innerSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`;
+  } else if (typeCode === 'mascota_suelta') {
+    innerSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.5 1 1.62-.659 2.334-1.63 4-2.828M14 5.172C14 3.782 15.577 2.679 17.5 3c2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.5 1-1.62-.659-2.334-1.63-4-2.828M12 14c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3z"/></svg>`;
+  } else if (typeCode === 'clean_point') {
+    innerSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+  } else {
+    innerSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>`;
+  }
+
   return L.divIcon({
     className: 'custom-map-pin',
     html: `
       <div style="
         background-color: ${color};
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 14px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        border: 2px solid white;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        border: 2px solid #ffffff;
       ">
-        ${typeIcon}
+        ${innerSvg}
       </div>
     `,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16]
+    iconSize: [28, 28],
+    iconAnchor: [14, 14]
   });
 }
 
@@ -78,21 +89,11 @@ export function MapPage() {
 
   const getPinColor = (status) => {
     switch (status) {
-      case 'pending': return '#F59E0B'; // Amber
+      case 'pending': return '#D97706'; // Amber
       case 'reviewing': return '#0284C7'; // Sky
       case 'in_progress': return '#7C3AED'; // Purple
-      case 'resolved': return '#10B981'; // Mint
-      default: return '#6B7280';
-    }
-  };
-
-  const getTypeSymbol = (type) => {
-    switch (type) {
-      case 'heces_sin_recoger': return '💩';
-      case 'orina_fachada': return '💦';
-      case 'mascota_suelta': return '🐕';
-      case 'maltrato': return '❤️‍🩹';
-      default: return '📍';
+      case 'resolved': return '#059669'; // Mint
+      default: return '#4B5563';
     }
   };
 
@@ -103,7 +104,7 @@ export function MapPage() {
       <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-stone-200/80 dark:border-slate-800 shadow-card space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="font-display font-black text-2xl text-stone-900 dark:text-stone-100 flex items-center gap-2">
+            <h2 className="font-display font-bold text-2xl text-stone-900 dark:text-stone-100 flex items-center gap-2">
               <MapPin className="w-6 h-6 text-mint-600" /> Mapa Comunitario de Salubridad
             </h2>
             <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
@@ -123,7 +124,7 @@ export function MapPage() {
 
         {/* Filter Chips */}
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-stone-100 dark:border-slate-800">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mr-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-stone-400 mr-1">
             Distrito:
           </span>
           <FilterChip
@@ -142,7 +143,7 @@ export function MapPage() {
             onClick={() => setDistrictFilter('Comas')}
           />
           <FilterChip
-            label="SMP"
+            label="San Martín de Porres"
             active={districtFilter === 'San Martín de Porres'}
             onClick={() => setDistrictFilter('San Martín de Porres')}
           />
@@ -154,7 +155,7 @@ export function MapPage() {
 
           <div className="hidden md:block w-px h-6 bg-stone-200 dark:bg-slate-700 mx-2"></div>
 
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mr-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-stone-400 mr-1">
             Tipo:
           </span>
           <FilterChip
@@ -178,7 +179,7 @@ export function MapPage() {
             onClick={() => setTypeFilter('mascota_suelta')}
           />
 
-          <label className="ml-auto flex items-center gap-2 text-xs font-bold text-stone-600 dark:text-stone-300 cursor-pointer bg-stone-50 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-stone-200 dark:border-slate-700">
+          <label className="ml-auto flex items-center gap-2 text-xs font-semibold text-stone-600 dark:text-stone-300 cursor-pointer bg-stone-50 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-stone-200 dark:border-slate-700">
             <input
               type="checkbox"
               checked={showCleanPoints}
@@ -190,7 +191,7 @@ export function MapPage() {
         </div>
       </div>
 
-      {/* Map + Drawer Layout */}
+      {/* Map Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
         
         {/* Main Map */}
@@ -205,13 +206,13 @@ export function MapPage() {
               <MapCenterController center={currentView.center} zoom={currentView.zoom} />
               
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
 
               {/* Render Report Markers */}
               {filteredReports.map((report) => {
-                const pin = createCustomPin(getPinColor(report.status), getTypeSymbol(report.incidentType));
+                const pin = createCustomPin(getPinColor(report.status), report.incidentType);
                 return (
                   <Marker
                     key={report.id}
@@ -224,15 +225,15 @@ export function MapPage() {
                     <Popup>
                       <div className="text-left space-y-1.5 p-1 max-w-[200px]">
                         <div className="flex items-center justify-between">
-                          <span className="font-mono text-[10px] text-stone-400">#{report.id}</span>
+                          <span className="font-mono text-xs text-stone-400">#{report.id}</span>
                           <StatusBadge status={report.status} size="xs" />
                         </div>
                         <h4 className="font-bold text-xs text-stone-900 line-clamp-1">{report.title}</h4>
-                        <p className="text-[10px] text-stone-500 line-clamp-2">{report.address}</p>
+                        <p className="text-xs text-stone-500 line-clamp-2">{report.address}</p>
                         <button
                           type="button"
                           onClick={() => setSelectedReport(report)}
-                          className="w-full text-center text-[10px] font-bold text-mint-700 bg-mint-50 py-1 rounded-lg border border-mint-200 mt-1"
+                          className="w-full text-center text-xs font-semibold text-mint-700 bg-mint-50 py-1 rounded-lg border border-mint-200 mt-1"
                         >
                           Ver Detalle Completo
                         </button>
@@ -245,7 +246,7 @@ export function MapPage() {
               {/* Render Clean Points */}
               {showCleanPoints &&
                 filteredCleanPoints.map((cp) => {
-                  const greenPin = createCustomPin('#10B981', '🗑️');
+                  const greenPin = createCustomPin('#059669', 'clean_point');
                   return (
                     <Marker
                       key={cp.id}
@@ -254,10 +255,10 @@ export function MapPage() {
                     >
                       <Popup>
                         <div className="text-left space-y-1 p-1">
-                          <span className="text-[10px] font-bold text-mint-700 uppercase">Punto Limpio / Tacho</span>
+                          <span className="text-xs font-bold text-emerald-700 uppercase">Punto Limpio / Tacho</span>
                           <h4 className="font-bold text-xs text-stone-900">{cp.name}</h4>
-                          <p className="text-[10px] text-stone-500">{cp.address}</p>
-                          <span className="text-[9px] text-stone-400 block font-mono">Último vaciado: {cp.lastEmptied}</span>
+                          <p className="text-xs text-stone-500">{cp.address}</p>
+                          <span className="text-xs text-stone-400 block font-mono">Último vaciado: {cp.lastEmptied}</span>
                         </div>
                       </Popup>
                     </Marker>
@@ -270,19 +271,19 @@ export function MapPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-4">
             <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2.5 rounded-2xl border border-stone-200 dark:border-slate-800 shadow-sm">
               <span className="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-sm flex-shrink-0"></span>
-              <span className="font-semibold text-stone-700 dark:text-stone-300">Pendiente</span>
+              <span className="font-medium text-stone-700 dark:text-stone-300">Pendiente</span>
             </div>
             <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2.5 rounded-2xl border border-stone-200 dark:border-slate-800 shadow-sm">
               <span className="w-3.5 h-3.5 rounded-full bg-sky-500 shadow-sm flex-shrink-0"></span>
-              <span className="font-semibold text-stone-700 dark:text-stone-300">En revisión</span>
+              <span className="font-medium text-stone-700 dark:text-stone-300">En revisión</span>
             </div>
             <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2.5 rounded-2xl border border-stone-200 dark:border-slate-800 shadow-sm">
-              <span className="w-3.5 h-3.5 rounded-full bg-purple-500 shadow-sm flex-shrink-0"></span>
-              <span className="font-semibold text-stone-700 dark:text-stone-300">En atención</span>
+              <span className="w-3.5 h-3.5 rounded-full bg-purple-600 shadow-sm flex-shrink-0"></span>
+              <span className="font-medium text-stone-700 dark:text-stone-300">En atención</span>
             </div>
             <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2.5 rounded-2xl border border-stone-200 dark:border-slate-800 shadow-sm">
-              <span className="w-3.5 h-3.5 rounded-full bg-mint-500 shadow-sm flex-shrink-0"></span>
-              <span className="font-semibold text-stone-700 dark:text-stone-300">Resuelto / Limpio</span>
+              <span className="w-3.5 h-3.5 rounded-full bg-emerald-600 shadow-sm flex-shrink-0"></span>
+              <span className="font-medium text-stone-700 dark:text-stone-300">Resuelto / Limpio</span>
             </div>
           </div>
         </div>
@@ -300,8 +301,8 @@ export function MapPage() {
               </button>
 
               <div className="space-y-1 pr-8">
-                <span className="font-mono text-[10px] text-stone-400">#{selectedReport.id}</span>
-                <h3 className="font-display font-black text-lg text-stone-900 dark:text-stone-100">
+                <span className="font-mono text-xs text-stone-400">#{selectedReport.id}</span>
+                <h3 className="font-display font-bold text-lg text-stone-900 dark:text-stone-100">
                   {selectedReport.title}
                 </h3>
               </div>
@@ -318,7 +319,7 @@ export function MapPage() {
               </div>
 
               <div className="space-y-1 text-xs">
-                <span className="text-stone-400 text-[10px] uppercase font-bold">Ubicación:</span>
+                <span className="text-stone-400 text-xs uppercase font-bold">Ubicación:</span>
                 <p className="font-medium text-stone-800 dark:text-stone-200">{selectedReport.address}</p>
                 <DistrictBadge district={selectedReport.district} />
               </div>

@@ -16,7 +16,8 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
-  Sparkles
+  Shield,
+  FileText
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -64,13 +65,13 @@ export function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
 
-  // Calculadora Modal State
+  // Modal Calculadora de Sanciones
   const [calcDistrict, setCalcDistrict] = useState('Los Olivos');
   const [calcRepeat, setCalcRepeat] = useState(false);
   const [calcType, setCalcType] = useState('heces_sin_recoger');
   const [isCalcModalOpen, setIsCalcModalOpen] = useState(false);
 
-  // Filtrado de reportes para la tabla y métricas
+  // Filtrado reactivo de reportes
   const filteredReports = reports.filter((r) => {
     if (districtFilter !== 'all' && r.district !== districtFilter) return false;
     if (statusFilter !== 'all' && r.status !== statusFilter) return false;
@@ -111,19 +112,12 @@ export function DashboardPage() {
     setSelectedReportIds([]);
   };
 
-  // Datos para gráficos Recharts
+  // Datos para gráficos Recharts con paleta institucional sobria
   const pieData = [
-    { name: 'Heces sin recoger', value: stats?.byType?.heces_sin_recoger || 18, color: '#F43F5E' },
-    { name: 'Orina en fachada', value: stats?.byType?.orina_fachada || 12, color: '#F59E0B' },
-    { name: 'Mascota suelta', value: stats?.byType?.mascota_suelta || 8, color: '#3B82F6' },
-    { name: 'Riesgo / Maltrato', value: stats?.byType?.maltrato || 3, color: '#8B5CF6' }
-  ];
-
-  const districtBarData = [
-    { name: 'Los Olivos', reportes: stats?.byDistrict?.['Los Olivos'] || 14, resueltos: 11 },
-    { name: 'Comas', reportes: stats?.byDistrict?.['Comas'] || 12, resueltos: 8 },
-    { name: 'SMP', reportes: stats?.byDistrict?.['San Martín de Porres'] || 10, resueltos: 7 },
-    { name: 'Independencia', reportes: stats?.byDistrict?.['Independencia'] || 5, resueltos: 4 }
+    { name: 'Heces sin recoger', value: stats?.byType?.heces_sin_recoger || 18, color: '#E11D48' },
+    { name: 'Orina en fachada', value: stats?.byType?.orina_fachada || 12, color: '#D97706' },
+    { name: 'Mascota suelta', value: stats?.byType?.mascota_suelta || 8, color: '#2563EB' },
+    { name: 'Riesgo o maltrato', value: stats?.byType?.maltrato || 3, color: '#7C3AED' }
   ];
 
   const monthlyTrendData = stats?.monthlyTrend || [
@@ -140,19 +134,14 @@ export function DashboardPage() {
   return (
     <div className="space-y-8 text-left">
       
-      {/* Top Banner */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-stone-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-card flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Encabezado Principal Sobrio y Profesional */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-stone-200 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="font-display font-black text-2xl text-stone-900 dark:text-stone-100">
-              Panel de Fiscalización y Salubridad Municipal
-            </h2>
-            <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-300">
-              UIT 2026: S/ 5,350.00
-            </span>
-          </div>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
-            Control de cuadrillas, emisión de sanciones, mapa de focos e indicadores de salubridad en Lima Norte.
+          <h1 className="font-display font-bold text-2xl sm:text-3xl text-stone-900 dark:text-stone-100 tracking-tight">
+            Panel de Fiscalización y Salubridad Municipal
+          </h1>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">
+            Control de cuadrillas, seguimiento de reportes ciudadanos e indicadores de salubridad en Lima Norte.
           </p>
         </div>
 
@@ -160,10 +149,10 @@ export function DashboardPage() {
           <Button
             variant="outline"
             size="sm"
-            leftIcon={<Calculator className="w-4 h-4 text-amber-600" />}
+            leftIcon={<Calculator className="w-4 h-4 text-stone-600 dark:text-stone-300" />}
             onClick={() => setIsCalcModalOpen(true)}
           >
-            Calculadora de Multas
+            Calculadora de Sanciones
           </Button>
 
           <Button
@@ -172,38 +161,38 @@ export function DashboardPage() {
             leftIcon={<Download className="w-4 h-4" />}
             onClick={() => exportCSV(districtFilter)}
           >
-            Exportar CSV
+            Exportar Reportes (CSV)
           </Button>
         </div>
       </div>
 
-      {/* KPI Bento Grid */}
+      {/* Tarjetas KPI Sobrias */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Focos Totales"
           value={stats?.kpis?.totalReports || 41}
-          subvalue="En Lima Norte"
+          subvalue="En los 4 distritos"
           trend={{ value: '+14%', isPositive: true }}
           icon={AlertTriangle}
           color="coral"
         />
         <StatCard
-          title="Pendientes de Atención"
+          title="Pendientes"
           value={stats?.kpis?.pending || 9}
-          subvalue="Requieren Cuadrilla"
+          subvalue="Por atender en campo"
           icon={Clock}
           color="amber"
         />
         <StatCard
-          title="Focos Resueltos"
+          title="Focos Atendidos"
           value={stats?.kpis?.resolved || 30}
-          subvalue={`${stats?.kpis?.resolutionRate || 75}% Eficiencia`}
+          subvalue={`${stats?.kpis?.resolutionRate || 75}% de efectividad`}
           trend={{ value: '+18%', isPositive: true }}
           icon={CheckCircle2}
           color="mint"
         />
         <StatCard
-          title="Padrón Canino"
+          title="Padrón de Mascotas"
           value={stats?.kpis?.totalPets || 15}
           subvalue="Con Carné QR Oficial"
           icon={UserCheck}
@@ -211,17 +200,17 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* Charts Bento Row */}
+      {/* Gráficos de Analítica */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Trend Area Chart */}
+        {/* Tendencia Mensual */}
         <Card className="lg:col-span-7 p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-display font-bold text-stone-900 dark:text-stone-100 text-sm">
               Evolución Mensual: Reportes vs. Resoluciones
             </h3>
-            <span className="text-[10px] font-bold text-mint-700 bg-mint-50 px-2.5 py-1 rounded-full border border-mint-200">
-              Semestral
+            <span className="text-xs font-medium text-stone-500 dark:text-stone-400">
+              Semestre 2025 - 2026
             </span>
           </div>
 
@@ -230,34 +219,34 @@ export function DashboardPage() {
               <AreaChart data={monthlyTrendData}>
                 <defs>
                   <linearGradient id="colorRep" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#F43F5E" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#F43F5E" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#E11D48" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#E11D48" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorRes" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#059669" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#059669" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Legend />
-                <Area type="monotone" dataKey="reports" name="Reportes" stroke="#F43F5E" strokeWidth={2} fillOpacity={1} fill="url(#colorRep)" />
-                <Area type="monotone" dataKey="resolved" name="Resueltos" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorRes)" />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+                <Area type="monotone" dataKey="reports" name="Focos Reportados" stroke="#E11D48" strokeWidth={2} fillOpacity={1} fill="url(#colorRep)" />
+                <Area type="monotone" dataKey="resolved" name="Focos Resueltos" stroke="#059669" strokeWidth={2} fillOpacity={1} fill="url(#colorRes)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
-        {/* Type Pie Chart */}
+        {/* Distribución por Categoría */}
         <Card className="lg:col-span-5 p-6 space-y-4 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <h3 className="font-display font-bold text-stone-900 dark:text-stone-100 text-sm">
               Distribución por Tipo de Foco
             </h3>
-            <span className="text-[10px] font-bold text-coral-700 bg-coral-50 px-2.5 py-1 rounded-full border border-coral-200">
-              Categoría
+            <span className="text-xs font-medium text-stone-500 dark:text-stone-400">
+              Categorías
             </span>
           </div>
 
@@ -286,19 +275,19 @@ export function DashboardPage() {
 
       </div>
 
-      {/* Advanced Reports Management Table */}
+      {/* Tabla Central de Gestión */}
       <Card className="p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="font-display font-bold text-stone-900 dark:text-stone-100 text-base">
-              Bandeja Central de Fiscalización y Cuadrillas ({filteredReports.length})
+              Bandeja Central de Fiscalización ({filteredReports.length})
             </h3>
             <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-              Administra asignaciones, actualización de estados en lote e inspección de campo.
+              Administración de cuadrillas, asignaciones y actualización de estados.
             </p>
           </div>
 
-          {/* Bulk Actions Menu if rows are selected */}
+          {/* Acciones Masivas */}
           {selectedReportIds.length > 0 && (
             <div className="flex items-center gap-2 bg-stone-100 dark:bg-slate-800 p-1.5 px-3 rounded-2xl border border-stone-200 dark:border-slate-700">
               <span className="text-xs font-bold text-stone-700 dark:text-stone-300">
@@ -307,14 +296,14 @@ export function DashboardPage() {
               <button
                 type="button"
                 onClick={() => handleBulkStatusChange('in_progress')}
-                className="text-[11px] font-bold bg-purple-100 hover:bg-purple-200 text-purple-800 px-2.5 py-1 rounded-lg"
+                className="text-xs font-semibold bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 px-2.5 py-1 rounded-lg border border-purple-200 dark:border-purple-800"
               >
                 A En Atención
               </button>
               <button
                 type="button"
                 onClick={() => handleBulkStatusChange('resolved')}
-                className="text-[11px] font-bold bg-mint-100 hover:bg-mint-200 text-mint-800 px-2.5 py-1 rounded-lg"
+                className="text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800"
               >
                 Marcar Resuelto
               </button>
@@ -322,9 +311,8 @@ export function DashboardPage() {
           )}
         </div>
 
-        {/* Filters and Search Bar */}
+        {/* Filtros de la Tabla */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-stone-100 dark:border-slate-800">
-          
           <div className="flex flex-wrap items-center gap-2">
             <FilterChip
               label="Todos"
@@ -342,7 +330,7 @@ export function DashboardPage() {
               onClick={() => { setDistrictFilter('Comas'); setCurrentPage(1); }}
             />
             <FilterChip
-              label="SMP"
+              label="San Martín de Porres"
               active={districtFilter === 'San Martín de Porres'}
               onClick={() => { setDistrictFilter('San Martín de Porres'); setCurrentPage(1); }}
             />
@@ -363,10 +351,9 @@ export function DashboardPage() {
               className="w-full pl-9 pr-3 py-2 rounded-2xl bg-stone-50 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-mint-500"
             />
           </div>
-
         </div>
 
-        {/* The Table */}
+        {/* Tabla */}
         <Table>
           <TableHeader>
             <tr>
@@ -378,8 +365,8 @@ export function DashboardPage() {
                   className="rounded text-mint-600"
                 />
               </TableHead>
-              <TableHead>ID</TableHead>
-              <TableHead>Tipo / Incidente</TableHead>
+              <TableHead>Código</TableHead>
+              <TableHead>Incidente</TableHead>
               <TableHead>Distrito y Dirección</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Inspector Asignado</TableHead>
@@ -398,10 +385,12 @@ export function DashboardPage() {
                     className="rounded text-mint-600"
                   />
                 </TableCell>
-                <TableCell className="font-mono text-stone-400">#{report.id}</TableCell>
+                <TableCell className="font-mono text-stone-500 dark:text-stone-400 font-semibold">
+                  #{report.id}
+                </TableCell>
                 <TableCell>
                   <div className="space-y-0.5">
-                    <span className="font-bold text-stone-900 dark:text-stone-100 block">
+                    <span className="font-semibold text-stone-900 dark:text-stone-100 block">
                       {report.title}
                     </span>
                     <IncidentBadge type={report.incidentType} size="xs" />
@@ -410,7 +399,7 @@ export function DashboardPage() {
                 <TableCell>
                   <div className="space-y-0.5">
                     <DistrictBadge district={report.district} />
-                    <span className="text-[11px] text-stone-500 block truncate max-w-[200px]">
+                    <span className="text-xs text-stone-500 dark:text-stone-400 block truncate max-w-[200px]">
                       {report.address}
                     </span>
                   </div>
@@ -423,7 +412,7 @@ export function DashboardPage() {
                     {report.assignedInspectorName || 'Sin asignar'}
                   </span>
                 </TableCell>
-                <TableCell className="text-stone-400 font-mono text-[11px]">
+                <TableCell className="text-stone-500 dark:text-stone-400 font-mono text-xs">
                   {new Date(report.createdAt).toLocaleDateString('es-PE')}
                 </TableCell>
                 <TableCell className="text-right">
@@ -440,8 +429,8 @@ export function DashboardPage() {
           </TableBody>
         </Table>
 
-        {/* Pagination Bar */}
-        <div className="flex items-center justify-between text-xs text-stone-500 pt-2 border-t border-stone-100 dark:border-slate-800">
+        {/* Paginación */}
+        <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 pt-2 border-t border-stone-100 dark:border-slate-800">
           <span>
             Mostrando página <strong>{currentPage}</strong> de <strong>{totalPages}</strong> ({filteredReports.length} reportes)
           </span>
@@ -470,12 +459,12 @@ export function DashboardPage() {
 
       </Card>
 
-      {/* Ordinance Calculator Modal */}
+      {/* Modal Calculadora de Sanciones Administrativas */}
       <Modal
         isOpen={isCalcModalOpen}
         onClose={() => setIsCalcModalOpen(false)}
-        title="Calculadora Oficial de Multas por Ordenanza"
-        subtitle="Cálculo normativo basado en la UIT 2026 (S/ 5,350.00)"
+        title="Calculadora de Sanciones Administrativas"
+        subtitle="Determinación de multas según ordenanza distrital (UIT 2026: S/ 5,350.00)"
         maxWidth="max-w-lg"
       >
         <div className="space-y-4 text-left">
@@ -487,7 +476,7 @@ export function DashboardPage() {
               <select
                 value={calcDistrict}
                 onChange={(e) => setCalcDistrict(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-2xl bg-stone-50 dark:bg-slate-800 border border-stone-200 dark:border-slate-700"
+                className="w-full text-xs p-2.5 rounded-2xl bg-stone-50 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-stone-900 dark:text-stone-100"
               >
                 <option value="Los Olivos">Los Olivos</option>
                 <option value="Comas">Comas</option>
@@ -503,7 +492,7 @@ export function DashboardPage() {
               <select
                 value={calcType}
                 onChange={(e) => setCalcType(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-2xl bg-stone-50 dark:bg-slate-800 border border-stone-200 dark:border-slate-700"
+                className="w-full text-xs p-2.5 rounded-2xl bg-stone-50 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-stone-900 dark:text-stone-100"
               >
                 <option value="heces_sin_recoger">Heces sin recoger</option>
                 <option value="orina_fachada">Orina en fachada</option>
@@ -512,35 +501,35 @@ export function DashboardPage() {
             </div>
           </div>
 
-          <label className="flex items-center gap-2 p-3 rounded-2xl bg-stone-50 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 cursor-pointer text-xs font-bold">
+          <label className="flex items-center gap-2 p-3 rounded-2xl bg-stone-50 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 cursor-pointer text-xs font-semibold">
             <input
               type="checkbox"
               checked={calcRepeat}
               onChange={(e) => setCalcRepeat(e.target.checked)}
-              className="w-4 h-4 text-amber-600 rounded"
+              className="w-4 h-4 text-mint-600 rounded"
             />
             <span>¿Es infractor reincidente? (Aplica porcentaje agravado)</span>
           </label>
 
-          {/* Result Highlight */}
+          {/* Resultado de la Sanción */}
           <div className="p-5 rounded-2xl bg-stone-900 text-white space-y-2">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-amber-400 font-bold uppercase">Sanción Económica:</span>
-              <span className="font-mono text-xl font-black text-amber-300">
+              <span className="text-stone-300 font-bold uppercase tracking-wider">Monto de la Sanción:</span>
+              <span className="font-mono text-xl font-bold text-emerald-400">
                 {currentFine.formattedAmount}
               </span>
             </div>
-            <div className="text-[11px] text-stone-400">
+            <div className="text-xs text-stone-300">
               {currentFine.finePercentage}% de la UIT ({currentFine.description})
             </div>
-            <div className="pt-2 border-t border-stone-800 text-[10px] text-stone-400 font-mono">
+            <div className="pt-2 border-t border-stone-800 text-xs text-stone-400 font-mono">
               Base Legal: {currentFine.ordinanceNumber}
             </div>
           </div>
 
           <div className="flex justify-end pt-2">
             <Button variant="primary" size="sm" onClick={() => setIsCalcModalOpen(false)}>
-              Cerrar Calculadora
+              Cerrar
             </Button>
           </div>
         </div>

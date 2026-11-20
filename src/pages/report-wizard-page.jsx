@@ -1,12 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, MapPin, CheckCircle2, ArrowRight, ArrowLeft, Crosshair, Sparkles, AlertCircle, FileText } from 'lucide-react';
+import {
+  Camera,
+  MapPin,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Crosshair,
+  Sparkles,
+  AlertCircle,
+  FileText,
+  Droplets,
+  PawPrint,
+  HeartCrack,
+  Trash2
+} from 'lucide-react';
 import { useAuth } from '../context/auth-context';
 import { useData } from '../context/data-context';
 import { Button } from '../components/ui/button';
 import { Input, Textarea } from '../components/ui/input';
 import { Select } from '../components/ui/select';
-import { Card, CardBody } from '../components/ui/card';
+import { Card } from '../components/ui/card';
 
 export function ReportWizardPage() {
   const { user } = useAuth();
@@ -77,7 +91,7 @@ export function ReportWizardPage() {
     try {
       const rep = await createReport(formData);
       setCreatedReport(rep);
-      setStep(4); // Success step
+      setStep(4);
     } catch (err) {
       console.error(err);
     } finally {
@@ -88,69 +102,74 @@ export function ReportWizardPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 text-left">
       
-      {/* Step Indicator */}
+      {/* Indicador de Pasos */}
       {step < 4 && (
         <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-stone-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between text-xs font-bold text-stone-400">
-          <div className={`flex items-center gap-2 ${step >= 1 ? 'text-mint-600 dark:text-mint-400 font-black' : ''}`}>
+          <div className={`flex items-center gap-2 ${step >= 1 ? 'text-mint-600 dark:text-mint-400 font-bold' : ''}`}>
             <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${step >= 1 ? 'bg-mint-600 text-white' : 'bg-stone-100 dark:bg-slate-800'}`}>
               1
             </span>
             <span>Tipo e Imagen</span>
           </div>
           <div className="w-8 h-0.5 bg-stone-200 dark:bg-slate-700"></div>
-          <div className={`flex items-center gap-2 ${step >= 2 ? 'text-mint-600 dark:text-mint-400 font-black' : ''}`}>
+          <div className={`flex items-center gap-2 ${step >= 2 ? 'text-mint-600 dark:text-mint-400 font-bold' : ''}`}>
             <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${step >= 2 ? 'bg-mint-600 text-white' : 'bg-stone-100 dark:bg-slate-800'}`}>
               2
             </span>
             <span>Ubicación GPS</span>
           </div>
           <div className="w-8 h-0.5 bg-stone-200 dark:bg-slate-700"></div>
-          <div className={`flex items-center gap-2 ${step >= 3 ? 'text-mint-600 dark:text-mint-400 font-black' : ''}`}>
+          <div className={`flex items-center gap-2 ${step >= 3 ? 'text-mint-600 dark:text-mint-400 font-bold' : ''}`}>
             <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${step >= 3 ? 'bg-mint-600 text-white' : 'bg-stone-100 dark:bg-slate-800'}`}>
               3
             </span>
-            <span>Confirmar</span>
+            <span>Confirmación</span>
           </div>
         </div>
       )}
 
-      {/* STEP 1: Tipo de Incidente y Foto */}
+      {/* PASO 1: Tipo de Incidente y Foto */}
       {step === 1 && (
         <Card className="p-6 sm:p-8 space-y-6">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-coral-600 dark:text-coral-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
               Paso 1 de 3
             </span>
-            <h2 className="font-display font-black text-2xl text-stone-900 dark:text-stone-100 mt-1">
+            <h2 className="font-display font-bold text-2xl text-stone-900 dark:text-stone-100 mt-1">
               ¿Qué tipo de infracción deseas reportar?
             </h2>
             <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
-              Selecciona la categoría del foco de salubridad para derivar a serenazgo o cuadrilla.
+              Selecciona la categoría del foco de salubridad para derivar la atención.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
             {[
-              { id: 'heces_sin_recoger', label: 'Heces sin recoger', sub: 'Vereda o parque', icon: '💩' },
-              { id: 'orina_fachada', label: 'Orina en fachada', sub: 'Pared / esquina', icon: '💦' },
-              { id: 'mascota_suelta', label: 'Perro suelto', sub: 'Sin correa ni bozal', icon: '🐕' },
-              { id: 'maltrato', label: 'Riesgo / Maltrato', sub: 'Abandono animal', icon: '❤️‍🩹' }
-            ].map((item) => (
-              <div
-                key={item.id}
-                onClick={() => setFormData((p) => ({ ...p, incidentType: item.id }))}
-                className={`
-                  p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center text-center gap-2 transition
-                  ${formData.incidentType === item.id
-                    ? 'border-mint-600 bg-mint-50/80 dark:bg-mint-950/40 shadow-sm'
-                    : 'border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800/80 hover:border-mint-300'}
-                `}
-              >
-                <div className="text-2xl">{item.icon}</div>
-                <span className="font-bold text-stone-900 dark:text-stone-100">{item.label}</span>
-                <span className="text-[10px] text-stone-500 dark:text-stone-400">{item.sub}</span>
-              </div>
-            ))}
+              { id: 'heces_sin_recoger', label: 'Heces sin recoger', sub: 'Vereda o parque', icon: Trash2, color: 'text-rose-600 bg-rose-50 dark:bg-rose-950/50' },
+              { id: 'orina_fachada', label: 'Orina en fachada', sub: 'Pared o esquina', icon: Droplets, color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50' },
+              { id: 'mascota_suelta', label: 'Perro suelto', sub: 'Sin correa ni bozal', icon: PawPrint, color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50' },
+              { id: 'maltrato', label: 'Riesgo o maltrato', sub: 'Abandono animal', icon: HeartCrack, color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50' }
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => setFormData((p) => ({ ...p, incidentType: item.id }))}
+                  className={`
+                    p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center text-center gap-2 transition
+                    ${formData.incidentType === item.id
+                      ? 'border-mint-600 bg-mint-50/70 dark:bg-mint-950/40 shadow-sm'
+                      : 'border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800/80 hover:border-mint-300'}
+                  `}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${item.color}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <span className="font-bold text-stone-900 dark:text-stone-100">{item.label}</span>
+                  <span className="text-xs text-stone-500 dark:text-stone-400">{item.sub}</span>
+                </div>
+              );
+            })}
           </div>
 
           <div className="space-y-3">
@@ -170,14 +189,14 @@ export function ReportWizardPage() {
             />
 
             <div className="space-y-1">
-              <span className="text-[11px] font-bold text-stone-400">O elige una foto de muestra:</span>
+              <span className="text-xs font-semibold text-stone-400">O elige una foto de muestra:</span>
               <div className="flex flex-wrap gap-1.5">
                 {samplePhotos.map((item, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => setFormData((p) => ({ ...p, photoUrl: item.url }))}
-                    className="text-[10px] font-medium bg-stone-100 dark:bg-slate-800 hover:bg-mint-50 text-stone-700 dark:text-stone-300 px-2 py-1 rounded-lg border border-stone-200 dark:border-slate-700 transition"
+                    className="text-xs font-medium bg-stone-100 dark:bg-slate-800 hover:bg-mint-50 text-stone-700 dark:text-stone-300 px-2.5 py-1 rounded-lg border border-stone-200 dark:border-slate-700 transition"
                   >
                     {item.label}
                   </button>
@@ -198,14 +217,14 @@ export function ReportWizardPage() {
         </Card>
       )}
 
-      {/* STEP 2: Ubicación & Coordenadas */}
+      {/* PASO 2: Ubicación & Coordenadas */}
       {step === 2 && (
         <Card className="p-6 sm:p-8 space-y-6">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-coral-600 dark:text-coral-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
               Paso 2 de 3
             </span>
-            <h2 className="font-display font-black text-2xl text-stone-900 dark:text-stone-100 mt-1">
+            <h2 className="font-display font-bold text-2xl text-stone-900 dark:text-stone-100 mt-1">
               Ubicación del Punto Crítico
             </h2>
             <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
@@ -256,7 +275,7 @@ export function ReportWizardPage() {
             <button
               type="button"
               onClick={detectGPS}
-              className="text-xs text-mint-700 dark:text-mint-400 font-bold flex items-center gap-1.5 bg-mint-50 dark:bg-mint-950/60 px-3 py-1.5 rounded-xl border border-mint-200 dark:border-mint-800"
+              className="text-xs text-mint-700 dark:text-mint-400 font-semibold flex items-center gap-1.5 bg-mint-50 dark:bg-mint-950/60 px-3 py-1.5 rounded-xl border border-mint-200 dark:border-mint-800"
             >
               <Crosshair className="w-3.5 h-3.5" />
               <span>Obtener ubicación actual por GPS</span>
@@ -274,14 +293,14 @@ export function ReportWizardPage() {
         </Card>
       )}
 
-      {/* STEP 3: Confirmación y Envío */}
+      {/* PASO 3: Confirmación y Envío */}
       {step === 3 && (
         <Card className="p-6 sm:p-8 space-y-6">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-coral-600 dark:text-coral-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
               Paso 3 de 3
             </span>
-            <h2 className="font-display font-black text-2xl text-stone-900 dark:text-stone-100 mt-1">
+            <h2 className="font-display font-bold text-2xl text-stone-900 dark:text-stone-100 mt-1">
               Revisar y Enviar Reporte
             </h2>
             <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
@@ -299,23 +318,23 @@ export function ReportWizardPage() {
 
           {/* Resumen Box */}
           <div className="p-4 rounded-2xl bg-stone-50 dark:bg-slate-800/80 border border-stone-200 dark:border-slate-700 space-y-2 text-xs">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
+            <span className="text-xs font-bold uppercase tracking-wider text-stone-400 block">
               Resumen del Reporte
             </span>
             <div className="flex justify-between">
-              <span className="text-stone-500">Distrito:</span>
+              <span className="text-stone-500 dark:text-stone-400">Distrito:</span>
               <strong className="text-stone-800 dark:text-stone-200">{formData.district}</strong>
             </div>
             <div className="flex justify-between">
-              <span className="text-stone-500">Tipo de infracción:</span>
+              <span className="text-stone-500 dark:text-stone-400">Tipo de infracción:</span>
               <strong className="text-stone-800 dark:text-stone-200">{formData.incidentType}</strong>
             </div>
             <div className="flex justify-between">
-              <span className="text-stone-500">Dirección:</span>
+              <span className="text-stone-500 dark:text-stone-400">Dirección:</span>
               <strong className="text-stone-800 dark:text-stone-200">{formData.address}</strong>
             </div>
             <div className="flex justify-between">
-              <span className="text-stone-500">Coordenadas:</span>
+              <span className="text-stone-500 dark:text-stone-400">Coordenadas:</span>
               <strong className="font-mono text-stone-800 dark:text-stone-200">
                 {formData.coordinates.lat}, {formData.coordinates.lng}
               </strong>
@@ -338,22 +357,22 @@ export function ReportWizardPage() {
         </Card>
       )}
 
-      {/* STEP 4: Success Screen */}
+      {/* PASO 4: Éxito */}
       {step === 4 && createdReport && (
         <Card className="p-8 sm:p-12 text-center space-y-6">
-          <div className="w-20 h-20 mx-auto rounded-3xl bg-mint-50 dark:bg-mint-950/60 text-mint-600 dark:text-mint-400 border border-mint-200 dark:border-mint-800 flex items-center justify-center text-3xl shadow-sm">
-            <CheckCircle2 className="w-10 h-10" />
+          <div className="w-16 h-16 mx-auto rounded-3xl bg-mint-50 dark:bg-mint-950/60 text-mint-600 dark:text-mint-400 border border-mint-200 dark:border-mint-800 flex items-center justify-center text-3xl shadow-sm">
+            <CheckCircle2 className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <span className="text-[10px] font-mono font-bold bg-mint-100 dark:bg-mint-950 text-mint-800 dark:text-mint-300 px-3 py-1 rounded-full border border-mint-300 dark:border-mint-800">
+            <span className="text-xs font-mono font-bold bg-mint-100 dark:bg-mint-950 text-mint-800 dark:text-mint-300 px-3 py-1 rounded-full border border-mint-300 dark:border-mint-800">
               Reporte #{createdReport.id}
             </span>
-            <h2 className="font-display font-black text-2xl text-stone-900 dark:text-stone-100">
-              ¡Reporte Registrado con Éxito!
+            <h2 className="font-display font-bold text-2xl text-stone-900 dark:text-stone-100">
+              Reporte Registrado con Éxito
             </h2>
             <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto leading-relaxed">
-              La alerta ha sido enviada a la central de serenazgo y cuadrilla de limpieza de <strong>{createdReport.district}</strong>. Puedes ver su estado en el mapa comunitario.
+              La alerta ha sido enviada a la central de serenazgo y cuadrilla de limpieza de <strong>{createdReport.district}</strong>.
             </p>
           </div>
 
