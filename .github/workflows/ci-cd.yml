@@ -30,10 +30,10 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependencias limpias (npm ci)
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Validar sintaxis y compilacion del proyecto
-        run: node -c src/server.js src/app.js
+        run: node -c src/server.js src/app.js && npm run build
 
   # =========================================================================
   # FASE 2: PRUEBAS AUTOMATIZADAS UNITARIAS Y DE INTEGRACION (TEST)
@@ -54,7 +54,7 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependencias
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Ejecutar suite completa de 24 pruebas con Jest
         run: npm test
@@ -197,7 +197,7 @@ jobs:
           node-version: 20
 
       - name: Instalar dependencias solo de produccion
-        run: npm ci --omit=dev
+        run: npm ci --omit=dev --legacy-peer-deps
 
       - name: Generar artefacto comprimido de distribucion
         run: |
