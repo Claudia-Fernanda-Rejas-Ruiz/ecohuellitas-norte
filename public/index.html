@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoHuellitas Norte — Salubridad y Padrón Canino en Lima Norte</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet CSS & JS for Interactive Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <style>
+    #map { height: 480px; z-index: 1; border-radius: 0.75rem; }
+    .badge-heces { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .badge-orina { background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .badge-suelta { background-color: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .badge-limpio { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+  <!-- Header / Navigation -->
+  <header class="bg-emerald-800 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+          <div class="bg-white text-emerald-800 p-2 rounded-xl font-bold shadow-inner">
+            <i class="fa-solid fa-paw text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold tracking-tight">EcoHuellitas Norte</h1>
+            <p class="text-xs text-emerald-200">Salubridad y Tenencia Responsable · Lima Norte</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex space-x-1 font-medium text-sm">
+          <button onclick="switchTab('home')" id="nav-home" class="px-3 py-2 rounded-lg bg-emerald-900 text-white hover:bg-emerald-700 transition">
+            <i class="fa-solid fa-house mr-1"></i> Inicio
+          </button>
+          <button onclick="switchTab('pets')" id="nav-pets" class="px-3 py-2 rounded-lg hover:bg-emerald-700 transition">
+            <i class="fa-solid fa-dog mr-1"></i> Padrón de Mascotas
+          </button>
+          <button onclick="switchTab('report')" id="nav-report" class="px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold transition shadow-sm">
+            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Reportar Foco
+          </button>
+          <button onclick="switchTab('map-view')" id="nav-map-view" class="px-3 py-2 rounded-lg hover:bg-emerald-700 transition">
+            <i class="fa-solid fa-map-location-dot mr-1"></i> Mapa de Puntos
+          </button>
+          <button onclick="switchTab('fiscal')" id="nav-fiscal" class="px-3 py-2 rounded-lg hover:bg-emerald-700 transition">
+            <i class="fa-solid fa-gavel mr-1"></i> Fiscalización
+          </button>
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-3 py-2 rounded-lg hover:bg-emerald-700 transition">
+            <i class="fa-solid fa-chart-pie mr-1"></i> Dashboard KPIs
+          </button>
+        </nav>
+
+        <!-- User / Auth Badge -->
+        <div class="flex items-center space-x-3">
+          <div id="user-badge" class="flex items-center space-x-2 bg-emerald-950 px-3 py-1.5 rounded-full text-xs text-emerald-100 border border-emerald-700">
+            <i class="fa-solid fa-circle-user text-sm text-emerald-400"></i>
+            <span id="user-name-display">Claudia Rejas (Los Olivos)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- District Banner -->
+  <div class="bg-emerald-100 border-b border-emerald-200 py-2 px-4 text-xs text-emerald-900">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold uppercase tracking-wider bg-emerald-800 text-white px-2 py-0.5 rounded">Zona de Cobertura</span>
+        <span>Los Olivos · Comas · San Martín de Porres · Independencia</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span><i class="fa-solid fa-shield-halved text-emerald-700 mr-1"></i> Marco Legal: Ordenanzas Municipales de Salubridad</span>
+        <span class="font-semibold text-emerald-800">UIT 2026: S/ 5,150.00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- TAB 1: INICIO (HOME) -->
+    <section id="tab-home" class="space-y-6">
+      <!-- Hero -->
+      <div class="bg-gradient-to-r from-emerald-800 to-teal-700 rounded-2xl text-white p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-4 max-w-2xl">
+          <span class="bg-emerald-500/30 text-emerald-100 text-xs uppercase font-bold tracking-widest px-3 py-1 rounded-full border border-emerald-400/30">
+            Plataforma DevSecOps de Salubridad Urbana
+          </span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight">
+            Por un Lima Norte limpio, seguro y con mascotas empadronadas
+          </h2>
+          <p class="text-emerald-100 text-sm sm:text-base leading-relaxed">
+            Reporta heces no recogidas y orina en fachadas en tiempo real con geolocalización. Empadrona a tu mascota, obtén su carné digital con QR y apoya la fiscalización municipal en Los Olivos, Comas, SMP e Independencia.
+          </p>
+          <div class="flex flex-wrap gap-3 pt-2">
+            <button onclick="switchTab('report')" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-5 py-2.5 rounded-xl shadow-lg transition flex items-center gap-2">
+              <i class="fa-solid fa-camera"></i> Reportar Punto Crítico
+            </button>
+            <button onclick="switchTab('pets')" class="bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2.5 rounded-xl border border-white/20 backdrop-blur transition flex items-center gap-2">
+              <i class="fa-solid fa-id-card"></i> Registrar Mascota con QR
+            </button>
+          </div>
+        </div>
+        <div class="hidden lg:block w-72 bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur text-center space-y-3">
+          <div class="text-4xl text-amber-300"><i class="fa-solid fa-shield-cat"></i></div>
+          <h3 class="font-bold text-lg">Cero Tolerancia a la Suciedad</h3>
+          <p class="text-xs text-emerald-100">Las ordenanzas distritales contemplan sanciones desde el 5% hasta el 12% de la UIT por reincidencia.</p>
+        </div>
+      </div>
+
+      <!-- Quick Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="overview-cards">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 font-semibold uppercase">Mascotas en Padrón</p>
+            <h3 class="text-2xl font-bold text-slate-800" id="stat-pets">2</h3>
+            <span class="text-xs text-emerald-600 font-medium"><i class="fa-solid fa-arrow-trend-up"></i> Con Carné QR Activo</span>
+          </div>
+          <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-paw"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 font-semibold uppercase">Puntos Reportados</p>
+            <h3 class="text-2xl font-bold text-amber-600" id="stat-reports">4</h3>
+            <span class="text-xs text-amber-600 font-medium"><i class="fa-solid fa-clock"></i> Geolocalizados</span>
+          </div>
+          <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 font-semibold uppercase">Tasa de Atención</p>
+            <h3 class="text-2xl font-bold text-teal-600" id="stat-resolution">75%</h3>
+            <span class="text-xs text-teal-600 font-medium"><i class="fa-solid fa-broom"></i> Limpieza / Sanción</span>
+          </div>
+          <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-check-double"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 font-semibold uppercase">Puntos Limpios</p>
+            <h3 class="text-2xl font-bold text-blue-600" id="stat-cleanpoints">5</h3>
+            <span class="text-xs text-blue-600 font-medium"><i class="fa-solid fa-trash-can"></i> Tachos y Dispensadores</span>
+          </div>
+          <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-recycle"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problem & Solution Overview Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center font-bold text-lg">1</div>
+          <h3 class="font-bold text-slate-800 text-lg">Problemática en Lima Norte</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            En Los Olivos, Comas, SMP e Independencia los vecinos sufren la acumulación de heces y orina que deterioran fachadas y veredas, generando malos olores, riesgos sanitarios y conflictos vecinales por falta de fiscalización.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <div class="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-lg flex items-center justify-center font-bold text-lg">2</div>
+          <h3 class="font-bold text-slate-800 text-lg">Solución EcoHuellitas</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Plataforma integral con reporte geolocalizado en 3 clics, padrón digital con código QR para collares de mascotas, y ruteo inteligente de serenazgo para intervenir puntos críticos.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <div class="w-10 h-10 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center font-bold text-lg">3</div>
+          <h3 class="font-bold text-slate-800 text-lg">Impacto DevSecOps</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Desarrollo ágil en 4 Sprints, pipeline CI/CD automatizado en GitHub Actions con análisis de seguridad SAST, escaneo de secretos y pruebas unitarias con cobertura del 80%+.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: PADRÓN DE MASCOTAS (PETS) -->
+    <section id="tab-pets" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Padrón Digital de Mascotas de Lima Norte</h2>
+          <p class="text-sm text-slate-600">Registro oficial conforme a las ordenanzas de tenencia responsable municipal.</p>
+        </div>
+        <button onclick="togglePetModal(true)" class="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2 self-start">
+          <i class="fa-solid fa-plus"></i> Empadronar Mascota
+        </button>
+      </div>
+
+      <!-- Pets List Grid -->
+      <div id="pets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- TAB 3: REPORTAR PUNTO CRÍTICO (REPORT) -->
+    <section id="tab-report" class="hidden max-w-3xl mx-auto space-y-6">
+      <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-md space-y-6">
+        <div class="border-b border-slate-100 pb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+            Canal Ciudadano en Tiempo Real
+          </span>
+          <h2 class="text-2xl font-bold text-slate-800 mt-2">Reportar Punto Crítico de Salubridad</h2>
+          <p class="text-sm text-slate-600">Notifica a la fiscalización de tu distrito sobre heces, orina o mascotas sueltas.</p>
+        </div>
+
+        <form id="report-form" onsubmit="handleCreateReport(event)" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Distrito de Lima Norte *</label>
+              <select id="rep-district" required onchange="updateLocationByDistrict(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                <option value="Los Olivos">Los Olivos</option>
+                <option value="Comas">Comas</option>
+                <option value="San Martín de Porres">San Martín de Porres</option>
+                <option value="Independencia">Independencia</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tipo de Incidencia *</label>
+              <select id="rep-type" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                <option value="heces_sin_recoger">Heces de mascota en vereda / parque</option>
+                <option value="orina_fachada">Orina constante en fachada / esquina</option>
+                <option value="mascota_suelta">Perro suelto sin correa ni supervisión</option>
+                <option value="maltrato">Condición de insalubridad / maltrato</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Dirección / Referencia Exacta *</label>
+            <input type="text" id="rep-address" required placeholder="Ej. Parque Previ con Jr. Mercurio cdra 3" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Severidad del Foco</label>
+              <select id="rep-severity" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                <option value="alta">Alta (Foco infeccioso grave)</option>
+                <option value="media" selected>Media (Reiterativo)</option>
+                <option value="baja">Baja (Puntual)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Latitud (GPS)</label>
+              <input type="number" step="any" id="rep-lat" value="-11.9892" required class="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Longitud (GPS)</label>
+              <input type="number" step="any" id="rep-lng" value="-77.0691" required class="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button type="button" onclick="detectGPSLocation()" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1">
+              <i class="fa-solid fa-crosshairs"></i> Obtener mi ubicación actual por GPS
+            </button>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Descripción de los hechos</label>
+            <textarea id="rep-description" rows="3" placeholder="Describe los detalles de la infracción o el horario recurrente..." class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Evidencia Fotográfica (URL de imagen)</label>
+            <input type="url" id="rep-photo" placeholder="https://..." class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
+            <button type="button" onclick="switchTab('home')" class="px-5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold text-sm">Cancelar</button>
+            <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
+              <i class="fa-solid fa-paper-plane"></i> Enviar Reporte a Fiscalización
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- TAB 4: MAPA DE PUNTOS & HEATMAP (MAP-VIEW) -->
+    <section id="tab-map-view" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800">Mapa de Puntos Críticos y Puntos Limpios</h2>
+            <p class="text-sm text-slate-600">Visualización espacial de focos infecciosos, tachos caninos y veterinarias en Lima Norte.</p>
+          </div>
+          <!-- Filter Controls -->
+          <div class="flex flex-wrap gap-2">
+            <button onclick="filterMap('all')" class="px-3 py-1.5 text-xs rounded-lg bg-slate-800 text-white font-medium">Todos</button>
+            <button onclick="filterMap('Los Olivos')" class="px-3 py-1.5 text-xs rounded-lg bg-emerald-100 text-emerald-800 font-medium hover:bg-emerald-200">Los Olivos</button>
+            <button onclick="filterMap('Comas')" class="px-3 py-1.5 text-xs rounded-lg bg-blue-100 text-blue-800 font-medium hover:bg-blue-200">Comas</button>
+            <button onclick="filterMap('San Martín de Porres')" class="px-3 py-1.5 text-xs rounded-lg bg-purple-100 text-purple-800 font-medium hover:bg-purple-200">SMP</button>
+            <button onclick="filterMap('Independencia')" class="px-3 py-1.5 text-xs rounded-lg bg-amber-100 text-amber-800 font-medium hover:bg-amber-200">Independencia</button>
+          </div>
+        </div>
+
+        <!-- The Map Container -->
+        <div id="map"></div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-2">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-red-500"></span> Heces sin recoger (Crítico)
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-amber-500"></span> Orina en fachadas
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-blue-500"></span> Mascota suelta
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-green-500"></span> Punto Limpio / Tacho
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: FISCALIZACIÓN Y SANCIONES (FISCAL) -->
+    <section id="tab-fiscal" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Consola de Fiscalización y Serenazgo Municipal</h2>
+          <p class="text-sm text-slate-600">Emisión de notificaciones preventivas y multas según ordenanzas de Lima Norte.</p>
+        </div>
+        <button onclick="toggleInspectionModal(true)" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2 self-start">
+          <i class="fa-solid fa-file-signature"></i> Emitir Notificación / Sanción
+        </button>
+      </div>
+
+      <!-- Quick Ordinance Calculator Card -->
+      <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-2xl shadow-md space-y-4">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i class="fa-solid fa-calculator text-amber-400"></i> Calculadora Automática de Infracciones Municipales
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs uppercase text-slate-300 font-bold mb-1">Distrito</label>
+            <select id="calc-district" onchange="runFineCalculator()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+              <option value="Los Olivos">Los Olivos (ORD-MDLO-512-2023)</option>
+              <option value="Comas">Comas (ORD-MDC-584-2023)</option>
+              <option value="San Martín de Porres">SMP (ORD-MDSMP-498-2023)</option>
+              <option value="Independencia">Independencia (ORD-MDI-312-2024)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-300 font-bold mb-1">Tipo de Infracción</label>
+            <select id="calc-type" onchange="runFineCalculator()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+              <option value="no_recojo_heces">No recoger heces de mascota</option>
+              <option value="orina_en_fachadas_sin_limpieza">Orina en fachadas sin limpieza</option>
+              <option value="mascota_suelta_sin_correa">Mascota suelta sin correa</option>
+              <option value="mascota_no_empadronada">Mascota no empadronada en registro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-300 font-bold mb-1">Condición</label>
+            <select id="calc-reincident" onchange="runFineCalculator()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+              <option value="false">Primera Infracción (Preventiva)</option>
+              <option value="true">Reincidencia (Sanción Firme)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="calc-result" class="bg-white/10 p-4 rounded-xl border border-white/10 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <span class="text-xs text-amber-300 font-bold uppercase tracking-wider" id="calc-label">Cálculo de Sanción</span>
+            <div class="text-xl font-bold" id="calc-amount">S/ 257.50 (5% UIT)</div>
+            <p class="text-xs text-slate-300" id="calc-ordinance">Ordenanza ORD-MDLO-512-2023</p>
+          </div>
+          <span class="bg-emerald-500/20 border border-emerald-400 text-emerald-300 px-3 py-1 rounded-lg text-xs font-semibold" id="calc-action">
+            Notificación Preventiva
+          </span>
+        </div>
+      </div>
+
+      <!-- Reports to Inspect Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="font-bold text-slate-800">Bandeja de Reportes para Fiscalización</h3>
+          <span class="text-xs text-slate-500">Actualizado en tiempo real</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="p-4">ID</th>
+                <th class="p-4">Distrito</th>
+                <th class="p-4">Ubicación / Foco</th>
+                <th class="p-4">Tipo</th>
+                <th class="p-4">Severidad</th>
+                <th class="p-4">Estado</th>
+                <th class="p-4 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="fiscal-table-body" class="divide-y divide-slate-100">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: DASHBOARD KPIS (DASHBOARD) -->
+    <section id="tab-dashboard" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Dashboard de Salubridad e Indicadores Distritales</h2>
+          <p class="text-sm text-slate-600">Métricas comparativas entre Los Olivos, Comas, SMP e Independencia.</p>
+        </div>
+        <span class="text-xs font-semibold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">Lima Norte 2026</span>
+      </div>
+
+      <!-- District Breakdown Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <h3 class="font-bold text-slate-800 text-lg">Índice de Salubridad y Eficiencia por Distrito</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Distrito</th>
+                <th class="p-3">Reportes</th>
+                <th class="p-3">Atendidos</th>
+                <th class="p-3">Tasa Atención</th>
+                <th class="p-3">Padrón Mascotas</th>
+                <th class="p-3">Puntos Limpios</th>
+                <th class="p-3">Score de Salubridad</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-district-body" class="divide-y divide-slate-100 font-medium">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Incident Breakdown Chart Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800">Distribución de Focos de Infección</h3>
+          <div class="space-y-3" id="incident-type-bars">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800">Cumplimiento del Marco DevSecOps</h3>
+          <div class="space-y-2 text-xs">
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center">
+              <span><i class="fa-solid fa-code-branch text-emerald-600 mr-2"></i> Estrategia de Branching</span>
+              <span class="font-bold text-slate-800">main & test (PR Aprobado)</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center">
+              <span><i class="fa-solid fa-vial-circle-check text-blue-600 mr-2"></i> Pruebas Unitarias e Integración</span>
+              <span class="font-bold text-slate-800">24/24 Tests Pasados (Jest)</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center">
+              <span><i class="fa-solid fa-shield-virus text-purple-600 mr-2"></i> Seguridad SAST & Secrets</span>
+              <span class="font-bold text-slate-800">0 Vulnerabilidades Críticas</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center">
+              <span><i class="fa-solid fa-rocket text-amber-600 mr-2"></i> Pipeline CI/CD GitHub Actions</span>
+              <span class="font-bold text-emerald-600">Automático en Push & PR</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: REGISTRAR MASCOTA -->
+  <div id="modal-pet" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-paw text-emerald-600"></i> Empadronar Mascota
+        </h3>
+        <button onclick="togglePetModal(false)" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="pet-form" onsubmit="handleRegisterPet(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nombre de la Mascota *</label>
+          <input type="text" id="pet-name" required placeholder="Ej. Firulais" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Especie *</label>
+            <select id="pet-species" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <option value="canino">Canino (Perro)</option>
+              <option value="felino">Felino (Gato)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Raza</label>
+            <input type="text" id="pet-breed" placeholder="Ej. Labrador / Mestizo" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tamaño</label>
+            <select id="pet-size" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <option value="pequeño">Pequeño (&lt; 10 kg)</option>
+              <option value="mediano" selected>Mediano (10 - 25 kg)</option>
+              <option value="grande">Grande (&gt; 25 kg)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Sexo</label>
+            <select id="pet-gender" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <option value="macho">Macho</option>
+              <option value="hembra">Hembra</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 py-2">
+          <label class="flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
+            <input type="checkbox" id="pet-rabies" checked class="rounded text-emerald-600 mr-2"> Vacuna Antirrábica al día
+          </label>
+          <label class="flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
+            <input type="checkbox" id="pet-sterilized" checked class="rounded text-emerald-600 mr-2"> Esterilizado / Castrado
+          </label>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Foto de la Mascota (URL)</label>
+          <input type="url" id="pet-photo" placeholder="https://..." class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="togglePetModal(false)" class="px-4 py-2 rounded-xl text-slate-600 font-semibold text-sm">Cancelar</button>
+          <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-5 py-2 rounded-xl text-sm shadow">
+            Guardar y Generar Carné QR
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CARNÉ DIGITAL QR -->
+  <div id="modal-qr" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border-4 border-emerald-600">
+      <div class="flex justify-between items-center">
+        <span class="text-xs font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+          Carné Digital Oficial
+        </span>
+        <button onclick="toggleQrModal(false)" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="w-24 h-24 mx-auto rounded-full overflow-hidden border-2 border-emerald-500 shadow-md">
+        <img id="qr-modal-photo" src="" alt="Foto Mascota" class="w-full h-full object-cover">
+      </div>
+
+      <div>
+        <h3 id="qr-modal-name" class="text-2xl font-extrabold text-slate-800">Rocky</h3>
+        <p id="qr-modal-code" class="text-xs font-mono font-bold text-emerald-700">EHN-LO-001</p>
+        <p id="qr-modal-breed" class="text-xs text-slate-500">Canino · Golden Retriever · Los Olivos</p>
+      </div>
+
+      <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex justify-center">
+        <img id="qr-modal-img" src="" alt="QR Mascota" class="w-44 h-44 shadow-inner rounded-xl">
+      </div>
+
+      <p class="text-xs text-slate-500 leading-tight">
+        Escanea este código QR para validar el empadronamiento distrital y datos sanitarios de la mascota.
+      </p>
+
+      <button onclick="toggleQrModal(false)" class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2.5 rounded-xl text-sm shadow">
+        Cerrar Carné
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-8 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-paw text-emerald-500 text-base"></i>
+        <span class="text-slate-200 font-bold">EcoHuellitas Norte</span> — Sistema Integrado de Salubridad y Padrón Canino
+      </div>
+      <div>
+        Práctica Calificada 2 · PFC III · Claudia Fernanda Rejas Ruiz
+      </div>
+    </div>
+  </footer>
+
+  <!-- Frontend Logic -->
+  <script src="/js/app.js"></script>
+</body>
+</html>
