@@ -212,10 +212,10 @@ jobs:
           node src/server.js &
           SERVER_PID=$!
           
-          # Espera con reintentos para respuesta HTTP 200
+          # Espera con reintentos para respuesta HTTP 200 en endpoint de salud
           for i in {1..10}; do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3099/api/salubridad/resumen || true)
-            echo "Intento $i: Codigo de respuesta recibido: $HTTP_STATUS"
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3099/health || true)
+            echo "Intento $i: Codigo de respuesta recibido en /health: $HTTP_STATUS"
             if [ "$HTTP_STATUS" -eq 200 ]; then
               echo "Prueba de humo superada exitosamente con codigo 200 en el intento $i."
               kill $SERVER_PID
