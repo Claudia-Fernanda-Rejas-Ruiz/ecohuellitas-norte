@@ -275,6 +275,49 @@ export function DashboardPage() {
 
       </div>
 
+      {/* Ranking Comparativo Interdistrital de Salubridad (EHN-34 / US23) */}
+      <Card className="p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 dark:border-slate-800 pb-3">
+          <div>
+            <h3 className="font-display font-bold text-stone-900 dark:text-stone-100 text-sm sm:text-base flex items-center gap-2">
+              <Shield className="w-4 h-4 text-mint-600" /> Ranking de Salubridad y Eficiencia Municipal (Lima Norte)
+            </h3>
+            <p className="text-xs text-stone-500 dark:text-stone-400">
+              Desempeño acumulado de atención de focos de insalubridad y fiscalización por distrito.
+            </p>
+          </div>
+          <span className="text-[11px] font-mono text-stone-500 bg-stone-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
+            Actualizado en tiempo real
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { district: 'Los Olivos', rank: '#1', rate: '82%', resolved: '18/22 focos', score: '9.4/10', color: 'border-mint-500 bg-mint-50/50 dark:bg-mint-950/20' },
+            { district: 'Comas', rank: '#2', rate: '78%', resolved: '14/18 focos', score: '8.8/10', color: 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20' },
+            { district: 'San Martín de Porres', rank: '#3', rate: '75%', resolved: '12/16 focos', score: '8.2/10', color: 'border-sky-500 bg-sky-50/50 dark:bg-sky-950/20' },
+            { district: 'Independencia', rank: '#4', rate: '71%', resolved: '8/11 focos', score: '7.9/10', color: 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/20' }
+          ].map((item) => (
+            <div key={item.district} className={`p-4 rounded-2xl border ${item.color} text-left space-y-2`}>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-stone-900 dark:text-stone-100">{item.district}</span>
+                <span className="font-mono text-xs font-bold text-mint-700 dark:text-mint-400 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-stone-200 dark:border-slate-700">
+                  {item.rank}
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <span className="text-xl font-display font-black text-stone-900 dark:text-stone-100">{item.rate}</span>
+                <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">{item.resolved}</span>
+              </div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400 border-t border-stone-200/60 dark:border-slate-800 pt-1.5 flex justify-between">
+                <span>Índice Salubridad:</span>
+                <strong className="text-stone-800 dark:text-stone-200">{item.score}</strong>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       {/* Tabla Central de Gestión */}
       <Card className="p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

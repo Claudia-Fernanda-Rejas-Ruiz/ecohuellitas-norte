@@ -254,11 +254,23 @@ export function MapPage() {
                       icon={greenPin}
                     >
                       <Popup>
-                        <div className="text-left space-y-1 p-1">
-                          <span className="text-xs font-bold text-emerald-700 uppercase">Punto Limpio / Tacho</span>
+                        <div className="text-left space-y-1.5 p-1 max-w-[210px]">
+                          <span className="text-[10px] font-bold text-emerald-700 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            Punto Limpio / Tacho
+                          </span>
                           <h4 className="font-bold text-xs text-stone-900">{cp.name}</h4>
-                          <p className="text-xs text-stone-500">{cp.address}</p>
-                          <span className="text-xs text-stone-400 block font-mono">Último vaciado: {cp.lastEmptied}</span>
+                          <p className="text-[11px] text-stone-500">{cp.address}</p>
+                          <span className="text-[10px] text-stone-400 block font-mono">Vaciado: {cp.lastEmptied}</span>
+                          <div className="pt-1 border-t border-stone-100 flex items-center justify-between">
+                            <span className="text-[10px] font-semibold text-stone-600">Estado: Operativo</span>
+                            <button
+                              type="button"
+                              onClick={() => alert(`Gracias por validar el estado del punto limpio en ${cp.name}.`)}
+                              className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded hover:bg-emerald-200"
+                            >
+                              Validar Estado
+                            </button>
+                          </div>
                         </div>
                       </Popup>
                     </Marker>

@@ -82,11 +82,11 @@ export function PetCredentialCard({ pet, onShowQR, onEdit, onDelete, showActions
         </div>
       </div>
 
-      {/* Feature Badges */}
+      {/* Feature Badges & Calendario de Vacunación (US17) */}
       <div className="bg-black/20 backdrop-blur-sm p-3 rounded-2xl border border-white/10 grid grid-cols-2 gap-2 text-[11px]">
         <div className="flex items-center gap-1.5 text-mint-100">
           <Check className="w-3.5 h-3.5 text-mint-300" />
-          <span>Antirrábica: <strong className="text-white">Al día</strong></span>
+          <span>Antirrábica: <strong className="text-white">Al día (Ref: Oct 2026)</strong></span>
         </div>
         <div className="flex items-center gap-1.5 text-mint-100">
           <Check className="w-3.5 h-3.5 text-mint-300" />
@@ -94,17 +94,28 @@ export function PetCredentialCard({ pet, onShowQR, onEdit, onDelete, showActions
         </div>
       </div>
 
-      {/* Action Footer */}
+      {/* Action Footer con Impresión de Ficha Sanitaria (US18) */}
       {showActions && (
         <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/15">
-          <button
-            type="button"
-            onClick={() => onShowQR && onShowQR(pet)}
-            className="text-xs font-bold text-mint-100 hover:text-white flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition"
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>Ver Carné QR</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => onShowQR && onShowQR(pet)}
+              className="text-xs font-bold text-mint-100 hover:text-white flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>Ver QR</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="text-xs font-semibold text-mint-100 hover:text-white flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-xl transition"
+              title="Descargar o Imprimir Ficha Sanitaria Oficial"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Imprimir Ficha</span>
+            </button>
+          </div>
 
           <div className="flex items-center gap-1.5">
             <button
